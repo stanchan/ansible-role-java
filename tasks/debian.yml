@@ -1,0 +1,79 @@
+---
+- block:
+  - name: Install apt-transport-https
+    apt:
+      name: apt-transport-https
+
+  - name: Add java repo
+    apt_repository:
+      repo: "{{ apt_java_repo }}"
+      state: present
+      update_cache: no
+
+  - name: Verify GPG key installed
+    command: apt-key list
+    no_log: yes
+    register: apt_key_check
+
+  - name: Update GPG key for PPA repo
+    command: apt-key adv --keyserver {{ apt_recv_key_server }} --recv-keys {{ apt_recv_key }}
+    ignore_errors: yes
+    become: yes
+    when: apt_key_check.stdout.find("Launchpad VLC") == -1
+
+  - name: Accept Oracle License (select)
+    debconf:
+      name: oracle-java8-installer
+      question: 'shared/accepted-oracle-license-v1-1'
+      value: 'true'
+      vtype: 'select'
+    ignore_errors: "{{ ansible_check_mode }}"
+
+  - name: Accept Oracle License (seen)
+    debconf:
+      name: oracle-java8-installer
+      question: 'shared/accepted-oracle-license-v1-1'
+      value: 'true'
+      vtype: 'seen'
+    ignore_errors: "{{ ansible_check_mode }}"
+
+  - name: Check if oracle-java8-installer is installed
+    command: dpkg-query -W oracle-java8-installer
+    register: deb_check
+    changed_when: no
+    ignore_errors: yes
+
+  - name: Run apt update
+    apt:
+      update_cache: yes
+    register: apt_result
+    until: apt_result|success
+    retries: 3
+    delay: 1
+    ignore_errors: yes
+
+  - name: Retry if needed using command apt-get update
+    command: apt-get update
+    when: apt_result|failed
+
+  - name: Install Java
+    apt:
+      name: "{{ item }}"
+      state: present
+      update_cache: yes
+      force: yes
+      cache_valid_time: "{{ apt_cache_valid_time }}"
+    ignore_errors: no
+    when: not deb_check.stdout | search("webupd")
+    with_items:
+      - oracle-java8-installer
+      - oracle-java8-set-default
+
+  - name: Update Java Security
+    lineinfile:
+      dest: "/etc/java-8-oracle/security/java.policy"
+      regexp: "{{ item | regex_escape() }}"
+      line: "        {{ item }}"
+      insertbefore: "};"
+    with_items: "{{ java_security_policies }}"
+  when: ansible_os_family == "Debian"

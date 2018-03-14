@@ -1,0 +1,20 @@
+galaxy_info:
+  author: Stan Chan
+  description: Install Oracle Java JDK
+  license: license (Apache)
+  min_ansible_version: 2.2
+  # min_ansible_container_version:
+  github_branch:
+  platforms:
+  - name: Debian
+    versions:
+    - 9
+    - 8
+  - name: Ubuntu
+    versions:
+    - xenial
+    - trusty
+  galaxy_tags:
+    - java
+    - jdk
+dependencies:

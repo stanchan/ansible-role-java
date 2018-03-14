@@ -1,0 +1,7 @@
+---
+apt_cache_valid_time: 600
+apt_recv_key_server: hkp://keyserver.ubuntu.com:80
+apt_recv_key: EEA14886
+apt_java_repo: "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
+install_java: yes
+java_security_policies: []

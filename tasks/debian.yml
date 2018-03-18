@@ -6,7 +6,7 @@
 
   - name: Add java repo
     apt_repository:
-      repo: "{{ apt_java_repo }}"
+      repo: "{{ java_apt_repo }}"
       state: present
       update_cache: no
 
@@ -16,7 +16,7 @@
     register: apt_key_check
 
   - name: Update GPG key for PPA repo
-    command: apt-key adv --keyserver {{ apt_recv_key_server }} --recv-keys {{ apt_recv_key }}
+    command: apt-key adv --keyserver {{ java_apt_recv_key_server }} --recv-keys {{ java_apt_recv_key }}
     ignore_errors: yes
     become: yes
     when: apt_key_check.stdout.find("Launchpad VLC") == -1

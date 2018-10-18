@@ -1,9 +1,5 @@
 ---
 - block:
-  - name: Install apt-transport-https
-    apt:
-      name: apt-transport-https
-
   - name: Add java repo
     apt_repository:
       repo: "{{ java_apt_repo }}"
@@ -13,13 +9,14 @@
   - name: Verify GPG key installed
     command: apt-key list
     no_log: yes
+    changed_when: no
     register: apt_key_check
 
   - name: Update GPG key for PPA repo
     command: apt-key adv --keyserver {{ java_apt_recv_key_server }} --recv-keys {{ java_apt_recv_key }}
     ignore_errors: yes
     become: yes
-    when: apt_key_check.stdout.find("Launchpad VLC") == -1
+    when: '"Launchpad VLC" not in apt_key_check.stdout'
 
   - name: Accept Oracle License (select)
     debconf:
@@ -27,7 +24,7 @@
       question: 'shared/accepted-oracle-license-v1-1'
       value: 'true'
       vtype: 'select'
-    ignore_errors: "{{ ansible_check_mode }}"
+    ignore_errors: yes
 
   - name: Accept Oracle License (seen)
     debconf:
@@ -35,7 +32,7 @@
       question: 'shared/accepted-oracle-license-v1-1'
       value: 'true'
       vtype: 'seen'
-    ignore_errors: "{{ ansible_check_mode }}"
+    ignore_errors: yes
 
   - name: Check if oracle-java8-installer is installed
     command: dpkg-query -W oracle-java8-installer
@@ -43,18 +40,23 @@
     changed_when: no
     ignore_errors: yes
 
+  - name: Install apt-transport-https
+    apt:
+      name: apt-transport-https
+
   - name: Run apt update
     apt:
       update_cache: yes
     register: apt_result
-    until: apt_result|success
+    until: apt_result is success
     retries: 3
     delay: 1
     ignore_errors: yes
+    changed_when: no
 
   - name: Retry if needed using command apt-get update
     command: apt-get update
-    when: apt_result|failed
+    when: apt_result is failed
 
   - name: Install Java
     apt:
@@ -64,8 +66,8 @@
       force: yes
       cache_valid_time: "{{ apt_cache_valid_time }}"
     ignore_errors: no
-    when: not deb_check.stdout | search("webupd")
-    with_items:
+    when: '"webupd" not in deb_check.stdout or java_force_install'
+    loop:
       - oracle-java8-installer
       - oracle-java8-set-default
 
@@ -75,5 +77,5 @@
       regexp: "{{ item | regex_escape() }}"
       line: "        {{ item }}"
       insertbefore: "};"
-    with_items: "{{ java_security_policies }}"
+    loop: "{{ java_security_policies }}"
   when: ansible_os_family == "Debian"

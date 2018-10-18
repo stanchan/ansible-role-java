@@ -2,11 +2,20 @@
 
 - name: Gather OS specific variables
   include_vars: "{{ item }}"
-  with_first_found:
-    - "../vars/{{ ansible_distribution|lower }}-{{ ansible_distribution_version|lower }}.yml"
-    - "../vars/{{ ansible_distribution|lower }}.yml"
-    - "../vars/{{ ansible_os_family|lower }}.yml"
-    - "../vars/defaults.yml"
+  loop: "{{ query('first_found', java_params) }}"
 
-- name: Setup debian
-  include_tasks: debian.yml
+- block:
+    - name: Setup debian
+      include_tasks: debian.yml
+  when: java_install
+
+- name: Set JAVA_HOME
+  copy:
+    content: |
+      #!/bin/sh
+      export JAVA_HOME={{ java_home }}
+      export PATH=$JAVA_HOME/bin:$PATH
+    dest: /etc/profile.d/java.sh
+    backup: yes
+    mode: 0644
+  when: java_home is defined and java_home != ""

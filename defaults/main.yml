@@ -8,8 +8,8 @@ java_force_install: no
 java_security_policies: []
 java_params:
   files:
-    - '{{ansible_os_distribution}}.yml'
-    - '{{ansible_os_family}}.yml'
+    - '{{ ansible_distribution }}.yml'
+    - '{{ ansible_os_family }}.yml'
     - default.yml
   paths:
     - 'vars'

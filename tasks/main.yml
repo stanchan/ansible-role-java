@@ -1,8 +1,7 @@
 ---
 
 - name: Gather OS specific variables
-  include_vars: "{{ item }}"
-  loop: "{{ query('first_found', java_params) }}"
+  include_vars: "{{ lookup('first_found', java_params) }}"
 
 - block:
     - name: Setup debian

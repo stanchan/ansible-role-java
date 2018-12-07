@@ -4,17 +4,17 @@
   include_vars: "{{ lookup('first_found', java_params) }}"
 
 - block:
-    - name: Setup debian
-      include_tasks: debian.yml
-  when: java_install
+  - name: Setup debian
+    include_tasks: debian.yml
 
-- name: Set JAVA_HOME
-  copy:
-    content: |
-      #!/bin/sh
-      export JAVA_HOME={{ java_home }}
-      export PATH=$JAVA_HOME/bin:$PATH
-    dest: /etc/profile.d/java.sh
-    backup: yes
-    mode: 0644
-  when: java_home is defined and java_home != ""
+  - name: Set JAVA_HOME
+    copy:
+      content: |
+        #!/bin/sh
+        export JAVA_HOME={{ java_home }}
+        export PATH=$JAVA_HOME/bin:$PATH
+      dest: /etc/profile.d/java.sh
+      backup: yes
+      mode: 0644
+    when: java_home
+  when: java_install

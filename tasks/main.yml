@@ -1,11 +1,12 @@
 ---
-
-- name: Gather OS specific variables
-  include_vars: "{{ lookup('first_found', java_params) }}"
-
 - block:
-  - name: Setup debian
-    include_tasks: debian.yml
+  - name: Gather OS specific variables
+    include_vars: "{{ lookup('first_found', java_params) }}"
+
+  - block:
+    - name: Setup debian
+      include_tasks: debian.yml
+    when: java_install
 
   - name: Set JAVA_HOME
     copy:
@@ -17,4 +18,4 @@
       backup: yes
       mode: 0644
     when: java_home
-  when: java_install
+  when: not skip_dependencies

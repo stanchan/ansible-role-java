@@ -17,4 +17,4 @@
       dest: /etc/profile.d/java.sh
       backup: yes
       mode: 0644
-  when: not skip_dependencies
+  when: not java_skip_dependencies

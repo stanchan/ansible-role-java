@@ -60,16 +60,13 @@
 
   - name: Install Java
     apt:
-      name: "{{ item }}"
+      name: "{{ java_deb_packages }}"
       state: present
       update_cache: yes
       force: yes
       cache_valid_time: "{{ apt_cache_valid_time }}"
     ignore_errors: no
     when: '"webupd" not in deb_check.stdout or java_force_install'
-    loop:
-      - oracle-java8-installer
-      - oracle-java8-set-default
 
   - name: Update Java Security
     lineinfile:

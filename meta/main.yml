@@ -1,6 +1,6 @@
 galaxy_info:
   author: Stan Chan
-  description: Install Oracle Java JDK
+  description: Install Java JDK
   license: license (Apache)
   min_ansible_version: 2.6
   # min_ansible_container_version:

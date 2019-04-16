@@ -1,7 +1,10 @@
 ---
 apt_cache_valid_time: 600
 
+java_openjdk: yes
 java_skip_dependencies: no
+java_openjdk_deb_packages:
+  - opennjdk-8-jdk
 java_deb_packages:
   - oracle-java8-installer
   - oracle-java8-set-default
@@ -10,6 +13,7 @@ java_apt_recv_key: EEA14886
 java_apt_repo: "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
 java_install: yes
 java_force_install: no
+java_policy_file: /etc/java-8-oracle/security/java.policy
 java_security_policies: []
 java_params:
   files:

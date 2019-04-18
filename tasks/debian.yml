@@ -83,7 +83,7 @@
 
   - name: Update Java Security
     lineinfile:
-      dest: "{{ java_policy_file }}"
+      dest: "{{ java_policy_file_path }}"
       regexp: "{{ item | regex_escape() }}"
       line: "        {{ item }}"
       insertbefore: "};"

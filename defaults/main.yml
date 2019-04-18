@@ -13,7 +13,12 @@ java_apt_recv_key: EEA14886
 java_apt_repo: "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
 java_install: yes
 java_force_install: no
-java_policy_file: /etc/java-8-oracle/security/java.policy
+java_home_path:
+  openjdk: /usr/lib/jvm/java-8-openjdk
+  oraclejdk: /usr/lib/jvm/java-8-oracle
+java_policy_file:
+  openjdk: /etc/java-8-openjdk/security/java.policy
+  oraclejdk: /etc/java-8-oracle/security/java.policy
 java_security_policies: []
 java_params:
   files:

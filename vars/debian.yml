@@ -1,3 +1,3 @@
 ---
-java_home: "{{ java_home_path.openjdk if java_openjdk else java_home_path.oraclejdk }}"
+java_home_default: "{{ java_home_path.openjdk if java_openjdk else java_home_path.oraclejdk }}"
 java_policy_file_path: "{{ java_policy_file.openjdk if java_openjdk else java_policy_file.oraclejdk }}"

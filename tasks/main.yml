@@ -1,14 +1,18 @@
 ---
-- block:
-  - name: Gather OS specific variables
-    include_vars: "{{ lookup('first_found', java_params) }}"
+- name: Gather OS specific variables
+  include_vars: "{{ lookup('first_found', java_params) }}"
 
+- name: Set java_home
+  set_fact:
+    java_home: "{{ java_home_default }}"
+
+- block:
   - block:
     - name: Setup debian
       include_tasks: debian.yml
     when: java_install
 
-  - name: Set JAVA_HOME
+  - name: Set java default profile
     copy:
       content: |
         #!/bin/sh

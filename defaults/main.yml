@@ -14,7 +14,7 @@ java_apt_repo: "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main
 java_install: yes
 java_force_install: no
 java_home_path:
-  openjdk: /usr/lib/jvm/java-8-openjdk
+  openjdk: /usr/lib/jvm/java-8-openjdk-amd64
   oraclejdk: /usr/lib/jvm/java-8-oracle
 java_policy_file:
   openjdk: /etc/java-8-openjdk/security/java.policy

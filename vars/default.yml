@@ -1,2 +1,2 @@
 ---
-java_home: "/usr/bin/java"
+java_home_default: "/usr/bin/java"

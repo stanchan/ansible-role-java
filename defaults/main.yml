@@ -4,7 +4,7 @@ apt_cache_valid_time: 600
 java_openjdk: yes
 java_skip_dependencies: no
 java_openjdk_deb_packages:
-  - opennjdk-8-jdk
+  - openjdk-8-jdk
 java_deb_packages:
   - oracle-java8-installer
   - oracle-java8-set-default

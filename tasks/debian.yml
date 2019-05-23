@@ -79,7 +79,7 @@
         force: yes
         cache_valid_time: "{{ apt_cache_valid_time }}"
       ignore_errors: no
-    when: not java_openjdk
+    when: java_openjdk
 
   - name: Update Java Security
     lineinfile:

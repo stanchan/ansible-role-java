@@ -1,3 +1,10 @@
 ---
-java_home_default: "{{ java_home_path.openjdk if java_openjdk else java_home_path.oraclejdk }}"
+java_home_path:
+  openjdk: /usr/lib/jvm/java-8-openjdk-amd64
+  oraclejdk: /usr/lib/jvm/java-8-oracle
+java_policy_file:
+  openjdk: /etc/java-8-openjdk/security/java.policy
+  oraclejdk: /etc/java-8-oracle/security/java.policy
+
+java_home: "{{ java_home_path.openjdk if java_openjdk else java_home_path.oraclejdk }}"
 java_policy_file_path: "{{ java_policy_file.openjdk if java_openjdk else java_policy_file.oraclejdk }}"

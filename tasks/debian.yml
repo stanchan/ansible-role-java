@@ -1,91 +1,89 @@
 ---
 - block:
-  - block:
-    - name: Add java repo
-      apt_repository:
-        repo: "{{ java_apt_repo }}"
-        state: present
-        update_cache: no
+  - name: Add java repo
+    apt_repository:
+      repo: "{{ java_apt_repo }}"
+      state: present
+      update_cache: no
 
-    - name: Verify GPG key installed
-      command: apt-key list
-      no_log: yes
-      changed_when: no
-      register: apt_key_check
+  - name: Verify GPG key installed
+    command: apt-key list
+    no_log: yes
+    changed_when: no
+    register: apt_key_check
 
-    - name: Update GPG key for PPA repo
-      command: apt-key adv --keyserver {{ java_apt_recv_key_server }} --recv-keys {{ java_apt_recv_key }}
-      ignore_errors: yes
-      become: yes
-      when: '"Launchpad VLC" not in apt_key_check.stdout'
+  - name: Update GPG key for PPA repo
+    command: apt-key adv --keyserver {{ java_apt_recv_key_server }} --recv-keys {{ java_apt_recv_key }}
+    ignore_errors: yes
+    become: yes
+    when: '"Launchpad VLC" not in apt_key_check.stdout'
 
-    - name: Accept Oracle License (select)
-      debconf:
-        name: oracle-java8-installer
-        question: 'shared/accepted-oracle-license-v1-1'
-        value: 'true'
-        vtype: 'select'
-      ignore_errors: yes
+  - name: Accept Oracle License (select)
+    debconf:
+      name: oracle-java8-installer
+      question: 'shared/accepted-oracle-license-v1-1'
+      value: 'true'
+      vtype: 'select'
+    ignore_errors: yes
 
-    - name: Accept Oracle License (seen)
-      debconf:
-        name: oracle-java8-installer
-        question: 'shared/accepted-oracle-license-v1-1'
-        value: 'true'
-        vtype: 'seen'
-      ignore_errors: yes
+  - name: Accept Oracle License (seen)
+    debconf:
+      name: oracle-java8-installer
+      question: 'shared/accepted-oracle-license-v1-1'
+      value: 'true'
+      vtype: 'seen'
+    ignore_errors: yes
 
-    - name: Check if oracle-java8-installer is installed
-      command: dpkg-query -W oracle-java8-installer
-      register: deb_check
-      changed_when: no
-      ignore_errors: yes
+  - name: Check if oracle-java8-installer is installed
+    command: dpkg-query -W oracle-java8-installer
+    register: deb_check
+    changed_when: no
+    ignore_errors: yes
 
-    - name: Install apt-transport-https
-      apt:
-        name: apt-transport-https
+  - name: Install apt-transport-https
+    apt:
+      name: apt-transport-https
 
-    - name: Run apt update
-      apt:
-        update_cache: yes
-      register: apt_result
-      until: apt_result is success
-      retries: 3
-      delay: 1
-      ignore_errors: yes
-      changed_when: no
+  - name: Run apt update
+    apt:
+      update_cache: yes
+    register: apt_result
+    until: apt_result is success
+    retries: 3
+    delay: 1
+    ignore_errors: yes
+    changed_when: no
 
-    - name: Retry if needed using command apt-get update
-      command: apt-get update
-      when: apt_result is failed
+  - name: Retry if needed using command apt-get update
+    command: apt-get update
+    when: apt_result is failed
 
-    - name: Install Java
-      apt:
-        name: "{{ java_deb_packages }}"
-        state: present
-        update_cache: yes
-        force: yes
-        cache_valid_time: "{{ apt_cache_valid_time }}"
-      ignore_errors: no
-      when: '"webupd" not in deb_check.stdout or java_force_install'
-    when: not java_openjdk
+  - name: Install Java
+    apt:
+      name: "{{ java_deb_packages }}"
+      state: present
+      update_cache: yes
+      force: yes
+      cache_valid_time: "{{ java_apt_cache_valid_time }}"
+    ignore_errors: no
+    when: '"webupd" not in deb_check.stdout or java_force_install'
+  when: not java_openjdk
 
-  - block:
-    - name: Install Java
-      apt:
-        name: "{{ java_openjdk_deb_packages }}"
-        state: present
-        update_cache: yes
-        force: yes
-        cache_valid_time: "{{ apt_cache_valid_time }}"
-      ignore_errors: no
-    when: java_openjdk
+- block:
+  - name: Install Java
+    apt:
+      name: "{{ java_openjdk_deb_packages }}"
+      state: present
+      update_cache: yes
+      force: yes
+      cache_valid_time: "{{ java_apt_cache_valid_time }}"
+    ignore_errors: no
+  when: java_openjdk
 
-  - name: Update Java Security
-    lineinfile:
-      dest: "{{ java_policy_file_path }}"
-      regexp: "{{ item | regex_escape() }}"
-      line: "        {{ item }}"
-      insertbefore: "};"
-    loop: "{{ java_security_policies }}"
-  when: ansible_os_family == "Debian"
+- name: Update Java Security
+  lineinfile:
+    dest: "{{ java_policy_file_path }}"
+    regexp: "{{ item | regex_escape() }}"
+    line: "        {{ item }}"
+    insertbefore: "};"
+  loop: "{{ java_security_policies }}"

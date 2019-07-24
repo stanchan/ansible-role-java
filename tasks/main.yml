@@ -1,15 +1,16 @@
 ---
-- name: Gather OS specific variables
-  include_vars: "{{ lookup('first_found', java_params) }}"
-
-- name: Set java_home
-  set_fact:
-    java_home: "{{ java_home_default }}"
+- name: Gather distribution specific variables
+  include_vars: "{{ ansible_distribution }}.yml"
 
 - block:
   - block:
     - name: Setup debian
       include_tasks: debian.yml
+      when: ansible_os_family == 'Debian'
+
+    - name: Setup redhat
+      include_tasks: redhat.yml
+      when: ansible_os_family == 'RedHat'
     when: java_install
 
   - name: Set java default profile

@@ -1,17 +1,32 @@
 ---
+java_version: 8
 java_install: yes
 java_force_install: no
 java_openjdk: yes
 java_skip_dependencies: no
 
 java_apt_cache_valid_time: 600
-java_openjdk_deb_packages:
-  - openjdk-8-jdk
-java_deb_packages:
-  - oracle-java8-installer
-  - oracle-java8-set-default
-java_apt_recv_key_server: hkp://keyserver.ubuntu.com:80
-java_apt_recv_key: EEA14886
-java_apt_repo: "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
+java_deb_config:
+  openjdk_8:
+    packages:
+      - openjdk-8-jdk
+    java_home_path: /usr/lib/jvm/java-8-openjdk-amd64
+    java_policy_file: /etc/java-8-openjdk/security/java.policy
+  openjdk_11:
+    default_release: "{{ ansible_distribution_release }}-backports"
+    repo: "deb http://deb.debian.org/debian {{ ansible_distribution_release }}-backports main"
+    packages:
+      - openjdk-11-jdk
+    java_home_path: /usr/lib/jvm/java-11-openjdk-amd64
+    java_policy_file: /etc/java-11-openjdk/security/java.policy
+  oracle_8:
+    repo: "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
+    apt_recv_key_server: hkp://keyserver.ubuntu.com:80
+    apt_recv_key: EEA14886
+    packages:
+      - oracle-java8-installer
+      - oracle-java8-set-default
+    java_home_path: /usr/lib/jvm/java-8-oracle
+    java_policy_file: /etc/java-8-oracle/security/java.policy
 
 java_security_policies: []

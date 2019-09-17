@@ -1,0 +1,2 @@
+---
+repo_key: "{% if java_openjdk %}openjdk{% else %}oracle{% endif %}_{{ java_version }}"

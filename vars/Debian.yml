@@ -1,3 +1,0 @@
----
-java_home: "{{ java_deb_config[repo_key]['java_home_path'] }}"
-java_policy_file_path: "{{ java_deb_config[repo_key]['java_policy_file'] }}"

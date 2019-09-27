@@ -1,25 +1,8 @@
 ---
-- name: Gather distribution specific variables
-  include_vars: "{{ ansible_distribution }}.yml"
+- name: Setup debian
+  include_tasks: debian.yml
+  when: ansible_os_family == 'Debian'
 
-- block:
-  - block:
-    - name: Setup debian
-      include_tasks: debian.yml
-      when: ansible_os_family == 'Debian'
-
-    - name: Setup redhat
-      include_tasks: redhat.yml
-      when: ansible_os_family == 'RedHat'
-    when: java_install
-
-  - name: Set java default profile
-    copy:
-      content: |
-        #!/bin/sh
-        export JAVA_HOME={{ java_home }}
-        export PATH=$JAVA_HOME/bin:$PATH
-      dest: /etc/profile.d/java.sh
-      backup: yes
-      mode: 0644
-  when: not java_skip_dependencies
+- name: Setup redhat
+  include_tasks: redhat.yml
+  when: ansible_os_family == 'RedHat'

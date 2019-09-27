@@ -1,73 +1,87 @@
 ---
-- name: Add java repo
-  apt_repository:
-    repo: "{{ java_deb_config[repo_key]['repo'] }}"
-    state: present
-    update_cache: yes
-  when: java_deb_config[repo_key]['repo'] is defined
+- block:
+  - name: Add java repo
+    apt_repository:
+      repo: "{{ java_deb_config[java_repo_key]['repo'] }}"
+      state: present
+      update_cache: yes
+    when: java_deb_config[java_repo_key]['repo'] is defined
+
+  - block:
+    - name: Verify GPG key installed
+      command: apt-key list
+      no_log: yes
+      changed_when: no
+      register: apt_key_check
+
+    - name: Update GPG key for PPA repo
+      command: apt-key adv --keyserver {{ java_deb_config[java_repo_key]['apt_recv_key_server'] }} --recv-keys {{ java_deb_config[repo_key]['apt_recv_key'] }}
+      ignore_errors: yes
+      become: yes
+      when: '"Launchpad VLC" not in apt_key_check.stdout'
+
+    - name: Accept Oracle License (select)
+      debconf:
+        name: oracle-java8-installer
+        question: 'shared/accepted-oracle-license-v1-1'
+        value: 'true'
+        vtype: 'select'
+      ignore_errors: yes
+
+    - name: Accept Oracle License (seen)
+      debconf:
+        name: oracle-java8-installer
+        question: 'shared/accepted-oracle-license-v1-1'
+        value: 'true'
+        vtype: 'seen'
+      ignore_errors: yes
+    when: not java_openjdk
+
+  - name: Install apt-transport-https
+    apt:
+      name: apt-transport-https
+
+  - name: Run apt update
+    apt:
+      update_cache: yes
+    register: apt_result
+    until: apt_result is success
+    retries: 3
+    delay: 1
+    ignore_errors: yes
+    changed_when: no
+
+  - name: Retry if needed using command apt-get update
+    apt:
+      update_cache: yes
+      force_apt_get: yes
+    when: apt_result is failed
+
+  - name: Install Java
+    apt:
+      name: "{{ java_deb_config[java_repo_key]['packages'] }}"
+      state: present
+      force: "{{ java_force_install | d(omit) }}"
+      cache_valid_time: "{{ java_apt_cache_valid_time }}"
+      default_release: "{{ java_deb_config[java_repo_key]['default_release'] | d(omit) }}"
+
+  - name: Update Java Security
+    lineinfile:
+      dest: "{{ java_policy_file_path }}"
+      regexp: "{{ item | regex_escape() }}"
+      line: "        {{ item }}"
+      insertbefore: "};"
+    loop: "{{ java_security_policies }}"
+  when: java_install
 
 - block:
-  - name: Verify GPG key installed
-    command: apt-key list
-    no_log: yes
-    changed_when: no
-    register: apt_key_check
-
-  - name: Update GPG key for PPA repo
-    command: apt-key adv --keyserver {{ java_deb_config[repo_key]['apt_recv_key_server'] }} --recv-keys {{ java_deb_config[repo_key]['apt_recv_key'] }}
-    ignore_errors: yes
-    become: yes
-    when: '"Launchpad VLC" not in apt_key_check.stdout'
-
-  - name: Accept Oracle License (select)
-    debconf:
-      name: oracle-java8-installer
-      question: 'shared/accepted-oracle-license-v1-1'
-      value: 'true'
-      vtype: 'select'
-    ignore_errors: yes
-
-  - name: Accept Oracle License (seen)
-    debconf:
-      name: oracle-java8-installer
-      question: 'shared/accepted-oracle-license-v1-1'
-      value: 'true'
-      vtype: 'seen'
-    ignore_errors: yes
-  when: not java_openjdk
-
-- name: Install apt-transport-https
-  apt:
-    name: apt-transport-https
-
-- name: Run apt update
-  apt:
-    update_cache: yes
-  register: apt_result
-  until: apt_result is success
-  retries: 3
-  delay: 1
-  ignore_errors: yes
-  changed_when: no
-
-- name: Retry if needed using command apt-get update
-  apt:
-    update_cache: yes
-    force_apt_get: yes
-  when: apt_result is failed
-
-- name: Install Java
-  apt:
-    name: "{{ java_deb_config[repo_key]['packages'] }}"
-    state: present
-    force: "{{ java_force_install | d(omit) }}"
-    cache_valid_time: "{{ java_apt_cache_valid_time }}"
-    default_release: "{{ java_deb_config[repo_key]['default_release'] | d(omit) }}"
-
-- name: Update Java Security
-  lineinfile:
-    dest: "{{ java_policy_file_path }}"
-    regexp: "{{ item | regex_escape() }}"
-    line: "        {{ item }}"
-    insertbefore: "};"
-  loop: "{{ java_security_policies }}"
+  - name: Set java default profile
+    copy:
+      content: |
+        #!/bin/sh
+        export JAVA_HOME={{ java_deb_config[java_repo_key]['java_home'] }}
+        export PATH=$JAVA_HOME/bin:$PATH
+      dest: /etc/profile.d/java.sh
+      backup: yes
+      mode: 0644
+  when: not java_skip_dependencies
